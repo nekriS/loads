@@ -2,6 +2,8 @@
 *.xls
 *.xlsx
 /data
-/data
+data/
+__pycache__/
+/__pycache__
 
 *.csv
