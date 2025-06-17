@@ -6,7 +6,7 @@ import openpyxl
 from functions import set_column_autowidth, is_float, getValue
 
 FOLDER = "data"
-INPUT_FILE = "report_Loads_2025_06_17_11_25_54.csv"
+INPUT_FILE = "report_Loads_2025_06_17_11_47_31.csv"
 OUTPUT_FILE = "output.xlsx"
 
 table = pd.read_csv(f"{FOLDER}/{INPUT_FILE}")
@@ -109,7 +109,7 @@ RULE_NOT_CURRENT = FormulaRule(
     border=THIN_BORDER
 )
 
-workbook = openpyxl.load_workbook("data/test.xlsx", data_only=False)
+workbook = openpyxl.load_workbook(f"{FOLDER}/{OUTPUT_FILE}", data_only=False)
 
 QUANTITY_OF_LOAD_ROWS =  len(table_new[1].unique()) + 5 + 1
 MAX_READ_COLUMN = 100
@@ -191,9 +191,10 @@ rule_formula = FormulaRule(
 )
 sheet.conditional_formatting.add(f'F2:F{len(table_new)+1}', rule_formula)
 sheet.freeze_panes = 'A2' 
-workbook.create_sheet(title="Сводная таблица")
+
 
 # EDITING OF THIRD PAGE
+workbook.create_sheet(title="Сводная таблица")
 sheet = workbook["Сводная таблица"]
 
 from openpyxl.worksheet.formula import ArrayFormula
@@ -202,7 +203,7 @@ sheet['A2'] = ArrayFormula(f"A2:A{QUANTITY_OF_LOAD_ROWS}", f'=IFERROR(IF(_xlfn.U
 sheet['B1'] = ArrayFormula(f"B1:{get_column_letter(MAX_READ_ROW)}1", f'=IF(TRANSPOSE(Напряжения!$A$2:$A${MAX_READ_ROW})<>"", TRANSPOSE(Напряжения!$A$2:$A${MAX_READ_ROW}),"")')
 
 for row in range(2, QUANTITY_OF_LOAD_ROWS+1):
-    for column in range(2,MAX_READ_COLUMN):
+    for column in range(2, MAX_READ_COLUMN):
         column_letter = get_column_letter(column)
         value = ArrayFormula(f"{column_letter}{row}:{column_letter}{row}", f'=IF(IFERROR(INDEX(Потребители!$H$2:$H$100, MATCH(1, (Потребители!$B$2:$B$100=$A{row})*(Потребители!$C$2:$C$100={column_letter}$1), 0)), "")<>0, IFERROR(INDEX(Потребители!$H$2:$H$100, MATCH(1, (Потребители!$B$2:$B$100=$A{row})*(Потребители!$C$2:$C$100={column_letter}$1), 0)), ""), "")')
         sheet.cell(row=row, column=column, value=value)
@@ -222,7 +223,7 @@ sheet.column_dimensions['A'].width = sheet_temp.column_dimensions['B'].width
 
 for row in sheet.iter_rows(min_row=2):
     current_row = row[0].row
-    sheet.row_dimensions[row[0].row].height = ROW_HEIGHT
+    sheet.row_dimensions[current_row].height = ROW_HEIGHT
     for cell in row:
         cell.alignment = ALIGNMNET_STYLE_CENTER
 
@@ -232,7 +233,6 @@ sheet.conditional_formatting.add(f'A1:{get_column_letter(MAX_READ_COLUMN)}1', RU
 sheet.conditional_formatting.add(f'B2:{get_column_letter(MAX_READ_COLUMN)}{MAX_READ_ROW}', RULE_LESS_THAN_ZERO)  
 
 row = QUANTITY_OF_LOAD_ROWS + 2
-
 sheet.row_dimensions[row].height = ROW_HEIGHT
 cell = sheet.cell(row=row, column=1, value="Напряжение, В")
 cell.alignment = ALIGNMNET_STYLE_CENTER

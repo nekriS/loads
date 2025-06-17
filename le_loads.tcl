@@ -6,7 +6,7 @@ if { [catch {clipboard clear}] } {
 
 package provide le_loads 0.1
 namespace eval ::le_loads {
-	::register::registerMenuActions {}
+	::le_register::registerMenuActions {}
 }
 
 
