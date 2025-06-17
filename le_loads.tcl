@@ -1,24 +1,12 @@
-package require Tcl2ExXML 2.0
-
 package require Tcl 8.4
 if { [catch {clipboard clear}] } {
   package require Tk 8.4
   wm withdraw .
 }
 
-package provide stcCaps 0.1
-namespace eval ::stcCaps {
-	proc registerMenuActions { args } {
-		catch {
-			InsertXMLMenu [list [list "stcToolsMenu"]                "" "" [list "popup"  "&STC Tools"    "0"                               ]]
-			InsertXMLMenu [list [list "stcToolsMenu" "Reports"] "" "" [list "popup"  "&Reports" "0"                             ]]
-			InsertXMLMenu [list [list "stcToolsMenu" "Reports" "Generate Loads"] "" "" [list "action" "Generate &Loads" "0" "Generate Loads" "stcUpdateMenu"]]
-			
-			RegisterAction "Generate Loads"  "capTrue" "" "::stcCaps::generateLoads" "Schematic"
-			RegisterAction "stcUpdateMenu" "capTrue" "" "capTrue"               ""
-		}
-	}
-
+package provide le_loads 0.1
+namespace eval ::le_loads {
+	::register::registerMenuActions {}
 }
 
 
@@ -28,10 +16,10 @@ proc write_to_csv {filename data {separator ","}} {
     foreach row $data {
         set processed_row [list]
         foreach cell $row {
-            # Преобразуем все данные к строке
+            # пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
             set cell_str [string map {"\"" "\"\""} $cell]
             
-            # Экранируем ячейки, если содержат спецсимволы
+            # пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
             if {[regexp -- "$separator|\"|\n|\r" $cell_str]} {
                 lappend processed_row "\"$cell_str\""
             } else {
@@ -40,9 +28,8 @@ proc write_to_csv {filename data {separator ","}} {
         }
         puts $fh [join $processed_row $separator]
     }
-    
     close $fh
-}
+}}
 
 proc getNets1 { lInstOcc } {
 	
@@ -167,21 +154,21 @@ proc getPropertyValue { pDesign pInstOcc pPropertyName } {
 }
 
 proc parse_current {current_string} {
-    # Убираем пробелы в начале и конце строки
+    # пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 	
 	set current_string [string map {" " ""} $current_string]
 
 	
-    # Регулярное выражение для извлечения числа и единицы измерения
+    # пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     if {[regexp {^([-+]?[0-9]*\.?[0-9]+)([a-zA-Z]*)$} $current_string match value unit]} {
 		
-        # Переводим единицу измерения в нижний регистр (ручная замена)
+        # пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ)
         set unit_lowercase ""
         foreach char [split $unit ""] {
             append unit_lowercase [string tolower $char]
         }
 		
-        # Определяем множитель (вместо switch -exact)
+        # пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅ switch -exact)
         if {$unit_lowercase == "" || $unit_lowercase == "a"} {
             set multiplier 1
         } elseif {$unit_lowercase == "ma"} {
@@ -192,27 +179,27 @@ proc parse_current {current_string} {
             set multiplier 0.000000001
         } else {
 			set multiplier 1
-			#puts "Неизвестная единица измерения: $unit"
-            #error "Неизвестная единица измерения: $unit"
+			#puts "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ: $unit"
+            #error "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ: $unit"
         }
 		
-        # Возвращаем результат как число
+        # пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
         return [expr {double($value) * $multiplier}]
     } else {
 		return ""
-		#puts "Неверный формат тока: $current_string"
-        #error "Неверный формат тока: $current_string"
+		#puts "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ: $current_string"
+        #error "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ: $current_string"
     }
 }
 
 proc add_or_update_row {table new_row nets} {
-    # Получаем reference из нового списка
+    # пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ reference пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
     set ref [lindex $new_row 0]
 
-    # Флаг: найдено совпадение или нет
+    # пїЅпїЅпїЅпїЅ: пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅ
     set found 0
 
-    # Проходим по всем строкам таблицы
+    # пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     for {set i 0} {$i < [llength $table]} {incr i} {
         set row [lindex $table $i]
         set existing_ref [lindex $row 0]
@@ -229,12 +216,12 @@ proc add_or_update_row {table new_row nets} {
         }
     }
 
-    # Если совпадений нет, просто добавляем новую строку
+    # пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
     if {!$found} {
         lappend table $new_row
     }
 
-    # Возвращаем обновлённую таблицу
+    # пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     return $table
 }
 
@@ -313,10 +300,10 @@ proc getParameters { pDesign pInstOcc } {
 
 proc deleteColumns { data columns_to_delete } {
 
-	# Функция для удаления столбцов в списке списков.
-	# Входные данные:
-	# 	data - Список списков
-	# 	columns_to_delete - Список столбцов или номер столбца
+	# пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
+	# пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ:
+	# 	data - пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+	# 	columns_to_delete - пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	
 	set new_data $data
 
@@ -358,12 +345,12 @@ proc ::stcCaps::generateLoads { } {
 	
 	$lStatus -delete
 	
-	# Сортируем
+	# пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	#set sorted_table [lsort -integer -index end $table]
 	#puts "[expr {[llength [lindex $sorted_table 0]] - 1}]"
 	#set sorted_table [deleteColumns $sorted_table [expr {[llength [lindex $sorted_table 0]] - 1}]]
 	
-	# Добавляем заголовок
+	# пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	set header {"Reference" "Value" "Supply Current" "SCDigit" "VOLTAGE" "CURRENT" "PowerNets"}
 	set sorted_table [linsert $table 0 $header]
 
